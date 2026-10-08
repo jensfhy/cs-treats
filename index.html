@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS TREATS Target Range</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Rye&family=Figtree:wght@400;600;800&display=swap">
+<style>
+/* Layout: sticker-outlined fairground shooting gallery on the left, the stock list and the order of wins on the right; stacks on phones. */
+:root{
+  --bg:#E4F4EE; --ink:#221A3F; --muted:#5F5980; --card:#FFFFFF; --line:#C9E2D9;
+  --body:#F2497C; --body-deep:#C92C5E; --glass:#F7FDFB; --outline:#221A3F;
+  --accent:#FFC83D; --on-accent:#221A3F; --scrim:rgba(34,26,63,.35);
+  --red:var(--body); --red-deep:var(--body-deep); --disc:#FFFFFF; --wood-line:var(--outline);
+  --display:"Bagel Fat One","Arial Rounded MT Bold","Trebuchet MS",sans-serif;
+  --text:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16122B; --ink:#F3EFFF; --muted:#A9A2CC; --card:#221C40; --line:#352D5C;
+    --body:#E33E72; --body-deep:#A8214D; --glass:#2A2350; --outline:#0B0818;
+    --accent:#FFC83D; --on-accent:#221A3F; --scrim:rgba(5,3,15,.55); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16122B; --ink:#F3EFFF; --muted:#A9A2CC; --card:#221C40; --line:#352D5C;
+  --body:#E33E72; --body-deep:#A8214D; --glass:#2A2350; --outline:#0B0818;
+  --accent:#FFC83D; --on-accent:#221A3F; --scrim:rgba(5,3,15,.55); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--text);font-size:16px;line-height:1.45}
+.wrap{max-width:980px;margin-inline:auto;padding-inline:16px;padding-block:28px 48px;display:flex;flex-direction:column;gap:24px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(2rem,7vw,3rem);line-height:1;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--muted)}
+main{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:32px;align-items:start}
+@media (max-width:760px){main{grid-template-columns:minmax(0,1fr)}}
+
+/* range: red wooden booth, striped backdrop, white disc targets on shelves */
+.range{width:min(400px,100%);margin-inline:auto;position:relative}
+.frame{background:var(--red);border:4px solid var(--wood-line);border-radius:10px;padding:10px 10px 0}
+.board{background:repeating-linear-gradient(90deg,var(--line) 0 16px,var(--glass) 16px 32px);border:3px solid var(--wood-line);border-radius:4px;padding-bottom:8px}
+.shelf{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px;padding:7px 6px 0;border-bottom:6px solid var(--red-deep);box-shadow:0 2px 0 var(--wood-line)}
+.t{aspect-ratio:1;border-radius:50%;border:2px solid var(--wood-line);display:grid;place-items:center;font-size:clamp(.47rem,2vw,.62rem);font-weight:800;color:#1B1436;background:var(--c);transform-origin:50% 100%}
+.t.gone{visibility:hidden}
+.t.hit{animation:hit .5s ease-in forwards}
+@keyframes hit{0%{transform:none}18%{transform:scale(1.25)}100%{transform:perspective(160px) rotateX(88deg);opacity:.2}}
+.sign{font-family:"Rye","Rockwell","Georgia",serif;color:var(--disc);text-align:center;font-size:clamp(1rem,4.6vw,1.35rem);letter-spacing:.06em;padding:8px 0 9px;line-height:1}
+.bay{position:relative;height:132px;display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.bay::before,.bay::after{content:"";position:absolute;top:-2px;bottom:0;width:16px;background:var(--red);border:3px solid var(--wood-line);border-top:0;border-radius:0 0 4px 4px}
+.bay::before{left:6px}.bay::after{right:6px}
+.plate{background:var(--card);color:var(--ink);border:3px solid var(--outline);border-radius:999px;padding:4px 14px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:.8rem;font-variant-numeric:tabular-nums}
+.knob{width:78px;height:78px;border-radius:50%;border:3px solid var(--outline);background:var(--accent);color:var(--on-accent);font-family:var(--display);font-size:1.2rem;letter-spacing:.04em;cursor:pointer;box-shadow:0 5px 0 var(--outline);transition:transform .08s,box-shadow .08s}
+.knob:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 var(--outline)}
+.knob:disabled{cursor:not-allowed;filter:grayscale(.8);opacity:.7}
+.knob:focus-visible,.btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.pivot{position:absolute;left:50%;bottom:26px;width:0;height:0}
+.gun{position:absolute;left:-30px;top:-96px;width:60px;height:120px;transform-origin:30px 96px;transition:transform .09s}
+.gun svg{display:block}
+.gun.kick svg{animation:kick .25s}
+@keyframes kick{30%{transform:translateY(12px)}}
+.cross{position:absolute;left:0;top:0;width:44px;height:44px;border-radius:50%;border:3px solid var(--wood-line);box-shadow:0 0 0 2px var(--accent);transition:transform .07s;pointer-events:none;z-index:3}
+.cross::before,.cross::after{content:"";position:absolute;background:var(--wood-line)}
+.cross::before{left:50%;top:-8px;bottom:-8px;width:2px;margin-left:-1px}
+.cross::after{top:50%;left:-8px;right:-8px;height:2px;margin-top:-1px}
+.bullet{position:absolute;left:0;top:0;width:12px;height:12px;border-radius:50%;background:#FF8A3D;border:2px solid var(--wood-line);pointer-events:none;z-index:3}
+
+/* prize pop-up over the globe */
+.reveal{position:absolute;z-index:4;inset:0 0 132px 0;border-radius:10px;display:grid;place-items:center;background:var(--scrim);padding:10%}
+.ticket{background:var(--card);border:3px solid var(--outline);border-radius:20px;box-shadow:0 6px 0 var(--outline);padding:16px 18px;text-align:center;max-width:100%;display:flex;flex-direction:column;align-items:center;gap:6px;animation:pop .3s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.ticket .eyebrow{font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ticket .emoji{font-size:2.6rem;line-height:1}
+.ticket .name{font-family:var(--display);font-size:1.5rem;line-height:1.1;text-wrap:balance}
+.ticket .note{font-size:.85rem;color:var(--muted)}
+.btn{font:inherit;font-weight:800;border:3px solid var(--outline);border-radius:999px;padding:6px 18px;background:var(--accent);color:var(--on-accent);cursor:pointer}
+.btn.plain{background:var(--card);color:var(--ink)}
+
+/* side */
+.side{display:flex;flex-direction:column;gap:28px;min-width:0}
+.head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.head h2{margin:0}
+.addform{display:flex;flex-wrap:wrap;align-items:end;gap:10px;background:var(--card);border:3px solid var(--outline);border-radius:16px;padding:12px;margin-bottom:12px}
+.addform label{display:flex;flex-direction:column;gap:3px;font-size:.78rem;font-weight:800;color:var(--muted);flex:1 1 90px;min-width:0}
+.addform label.wide{flex:3 1 160px}
+.addform input{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--outline);border-radius:10px;padding:6px 10px;width:100%;min-width:0}
+.msg{margin:0 0 10px;font-size:.9rem;color:var(--muted)}
+h2{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0 0 10px}
+.stock{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:0 24px}
+.stock li{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:2px solid var(--line);min-width:0}
+.stock .ab{background:var(--c);color:#1B1436 !important;flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--outline);display:grid;place-items:center;font-size:.62rem;font-weight:800;color:var(--on-accent)}
+.stock li.gone .ab{opacity:.4}
+.stock .n{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:600}
+.stock .c{font-variant-numeric:tabular-nums;font-weight:800}
+.stock .c small{font-weight:400;color:var(--muted);font-size:.8rem}
+.stock li.gone .n{text-decoration:line-through;color:var(--muted);font-weight:400}
+.stock li.gone .c{color:var(--muted)}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.log li{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:3px 12px;font-size:.9rem}
+.log b{font-variant-numeric:tabular-nums;color:var(--muted);margin-right:4px}
+.empty{color:var(--muted);margin:0}
+.refill{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+@media (prefers-reduced-motion:reduce){.tray-ball.drop,.ticket{animation:none}.knob.turn::before{transition:none}}
+</style>
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>CS TREATS</h1>
+    <p>One shot, one target. Whatever you hit is gone from the board.</p>
+  </header>
+  <main>
+    <section class="range" id="range" aria-label="Target range">
+      <div class="frame">
+        <div class="board" id="board" aria-hidden="true"></div>
+        <div class="sign">u cannot use USP</div>
+      </div>
+      <div class="bay">
+        <div class="plate" id="plate">91 left</div>
+        <div class="pivot" id="pivot"><div class="gun" id="gun">
+          <svg viewBox="0 0 60 120" width="60" height="120" aria-hidden="true">
+            <rect x="22" y="2" width="16" height="16" rx="3" fill="#FF8A3D" stroke="#1B1436" stroke-width="3"/>
+            <rect x="17" y="15" width="26" height="56" rx="5" fill="#FFC83D" stroke="#1B1436" stroke-width="3"/>
+            <rect x="24" y="24" width="12" height="32" rx="3" fill="#3B3554"/>
+            <rect x="8" y="62" width="44" height="36" rx="10" fill="#FFC83D" stroke="#1B1436" stroke-width="3"/>
+            <circle cx="30" cy="80" r="7" fill="#3B3554"/>
+            <rect x="20" y="94" width="20" height="24" rx="6" fill="#3B3554" stroke="#1B1436" stroke-width="3"/>
+          </svg>
+        </div></div>
+        <button class="knob" id="knob" type="button">FIRE</button>
+      </div>
+      <div class="cross" id="cross" hidden></div>
+      <div class="bullet" id="bullet" hidden></div>
+      <div class="reveal" id="reveal" hidden>
+        <div class="ticket" role="status" aria-live="polite">
+          <span class="eyebrow" id="rvEyebrow">You hit</span>
+          <span class="emoji" id="rvEmoji"></span>
+          <span class="name" id="rvName"></span>
+          <span class="note" id="rvNote"></span>
+          <button class="btn" id="rvOk" type="button">OK</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="side">
+      <section>
+        <div class="head"><h2>Still standing</h2><button class="btn" id="addBtn" type="button">+ Add item</button></div>
+        <form class="addform" id="addForm" hidden>
+          <label class="wide" for="addName">Item name<input id="addName" maxlength="40" required autocomplete="off"></label>
+          <label for="addAb">Short code<input id="addAb" maxlength="3" placeholder="auto" autocomplete="off"></label>
+          <label for="addQty">How many<input id="addQty" type="number" min="1" max="50" value="1" required></label>
+          <button class="btn" type="submit">Add targets</button>
+          <button class="btn plain" id="addCancel" type="button">Close</button>
+        </form>
+        <p class="msg" id="addMsg" hidden></p>
+        <ul class="stock" id="stock"></ul>
+      </section>
+      <section>
+        <h2>Shot down so far</h2>
+        <ol class="log" id="log"></ol>
+        <p class="empty" id="logEmpty">Nothing yet. Press FIRE.</p>
+      </section>
+      <section class="refill">
+        <button class="btn plain" id="refill" type="button">Reset targets</button>
+        <span id="confirm" hidden>Stand every target back up and clear the list?
+          <button class="btn" id="yes" type="button">Yes, reset</button>
+          <button class="btn plain" id="no" type="button">Cancel</button>
+        </span>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  var BASE=[
+    ["McFlurry",8,"🍦","MF"],["Korean food",2,"🍲","KOR"],["Starbucks",10,"☕","SB"],["McD",5,"🍔","MCD"],
+    ["Momo",1,"🥟","MO"],["Spaghetti",1,"🍝","SPA"],["KFC",2,"🍗","KFC"],["BBQ Plaza",1,"🥓","BBQ"],
+    ["McD fries (big)",4,"🍟","FR"],["Chicken rice",1,"🍚","CR"],["HDL (Haidilao)",1,"🍲","HDL"],
+    ["Japanese food",1,"🍣","JP"],["Bawang Chaji",8,"🧋","BW"],["1 food + 1 drink",1,"🍱","F+D"],
+    ["Domino's",1,"🍕","DOM"],["McD nuggets",4,"🍗","NUG"],["McD cone",18,"🍦","CON"],
+    ["Luckin orange americano",1,"🍊","LK"],["Choco Top",9,"🍫","CT"],["Boost",1,"🥤","BST"],
+    ["llaollao",3,"🍨","LL"],["Coffee Bean",4,"☕","CB"],["Coffee Bean set",2,"🥐","CBS"]
+  ];
+  var PRIZES=BASE.map(function(p){return p.slice()});
+  var KEY="cs-treats-range-v1",CAP=120;
+  var COLORS=["#FFC83D","#F2497C","#4CC3F1","#5FD6A0","#FF8A3D","#9B7BFF"];
+  var $=function(id){return document.getElementById(id)};
+  function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+  var reduced=(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)||!Element.prototype.animate;
+
+  /* slots = one entry per place on the board: a prize index, or -1 once shot */
+  var slots,history;
+  function fresh(){
+    slots=[];
+    PRIZES.forEach(function(p,i){for(var q=0;q<p[1];q++)slots.push(i)});
+    for(var k=slots.length-1;k>0;k--){var r=Math.floor(Math.random()*(k+1)),t=slots[k];slots[k]=slots[r];slots[r]=t}
+    history=[];
+  }
+  function leftOf(i){var n=0;slots.forEach(function(p){if(p===i)n++});return n}
+  function total(){var n=0;slots.forEach(function(p){if(p>=0)n++});return n}
+  function load(){
+    try{
+      var s=JSON.parse(localStorage.getItem(KEY));
+      if(s&&Array.isArray(s.extra))s.extra.forEach(function(e){
+        if(Array.isArray(e)&&typeof e[0]==="string"&&e[0])PRIZES.push([e[0].slice(0,40),1,"🎁",String(e[3]||"?").slice(0,3)]);
+      });
+      if(s&&Array.isArray(s.totals)&&s.totals.length===PRIZES.length)s.totals.forEach(function(n,i){
+        n=Math.floor(+n)||0;if(n>0&&n<=500)PRIZES[i][1]=n;
+      });
+      fresh();
+      if(s&&Array.isArray(s.slots)&&s.slots.length<=600&&Array.isArray(s.history)&&
+         s.slots.every(function(p){return p===-1||(Number.isInteger(p)&&PRIZES[p])})){
+        slots=s.slots;history=s.history.filter(function(i){return PRIZES[i]});
+      }
+    }catch(e){fresh()}
+  }
+  function save(){try{localStorage.setItem(KEY,JSON.stringify({slots:slots,history:history,extra:PRIZES.slice(BASE.length),totals:PRIZES.map(function(p){return p[1]})}))}catch(e){}}
+
+  var range=$("range"),board=$("board"),knob=$("knob"),gun=$("gun"),cross=$("cross"),bullet=$("bullet"),busy=false;
+  function render(){
+    var t=total();
+    $("plate").textContent=t===0?"All gone":t+" left";
+    knob.disabled=t===0;
+    var rows=[];
+    for(var r=0;r<slots.length;r+=10)rows.push('<div class="shelf">'+slots.slice(r,r+10).map(function(p){
+      return p<0?'<span class="t gone"></span>':'<span class="t" style="--c:'+COLORS[p%COLORS.length]+'">'+esc(PRIZES[p][3])+'</span>';
+    }).join("")+'</div>');
+    board.innerHTML=rows.join("");
+    $("stock").innerHTML=PRIZES.map(function(p,i){
+      var n=leftOf(i);
+      return '<li class="'+(n?"":"gone")+'"><span class="ab" style="--c:'+COLORS[i%COLORS.length]+'">'+esc(p[3])+'</span><span class="n">'+esc(p[0])+
+        '</span><span class="c">'+n+' <small>/ '+p[1]+'</small></span></li>';
+    }).join("");
+    var items=[];
+    for(var k=history.length-1;k>=0;k--)items.push("<li><b>#"+(k+1)+"</b>"+esc(PRIZES[history[k]][0])+"</li>");
+    $("log").innerHTML=items.join("");
+    $("logEmpty").hidden=history.length>0;
+  }
+  function showPrize(i){
+    var p=PRIZES[i],n=leftOf(i),t=total();
+    $("rvEmoji").textContent=p[2];
+    $("rvName").textContent=p[0];
+    $("rvNote").textContent=t===0?"That was the very last target.":
+      n===0?"That was the last "+p[0]+".":n+" more of these still standing.";
+    $("reveal").hidden=false;
+  }
+  function hidePrize(){$("reveal").hidden=true}
+
+  function center(el){
+    var r=el.getBoundingClientRect(),o=range.getBoundingClientRect();
+    return {x:r.left-o.left-range.clientLeft+r.width/2,y:r.top-o.top-range.clientTop+r.height/2};
+  }
+  function aimAt(el){
+    var c=center(el),g=center($("pivot"));
+    cross.style.transform="translate("+(c.x-22)+"px,"+(c.y-22)+"px)";
+    gun.style.transform="rotate("+(Math.atan2(c.x-g.x,g.y-c.y)*57.2958)+"deg)";
+  }
+
+  function press(){
+    if(busy||total()===0)return;
+    busy=true;hidePrize();
+    var live=[];slots.forEach(function(p,k){if(p>=0)live.push(k)});
+    var k=live[Math.floor(Math.random()*live.length)],idx=slots[k];
+    slots[k]=-1;history.push(idx);save();
+    var els=board.querySelectorAll(".t");
+    function done(){cross.hidden=true;bullet.hidden=true;render();showPrize(idx);busy=false}
+    if(reduced){done();return}
+
+    /* the sight hops around the board, slows, and settles on the chosen target */
+    var hops=[],n=Math.min(10,live.length-1);
+    for(var h=0;h<n;h++)hops.push(live[Math.floor(Math.random()*live.length)]);
+    hops.push(k);
+    var i=0,delay=70;
+    cross.hidden=false;
+    (function hop(){
+      aimAt(els[hops[i]]);i++;
+      if(i<hops.length){delay+=24;setTimeout(hop,delay)}else setTimeout(fire,420);
+    })();
+    function fire(){
+      var a=center($("pivot")),b=center(els[k]);
+      gun.classList.remove("kick");void gun.offsetWidth;gun.classList.add("kick");
+      bullet.hidden=false;
+      var an=bullet.animate([
+        {transform:"translate("+(a.x-6)+"px,"+(a.y-6)+"px)"},
+        {transform:"translate("+(b.x-6)+"px,"+(b.y-6)+"px)"}],{duration:160,easing:"linear"});
+      an.onfinish=function(){
+        bullet.hidden=true;cross.hidden=true;
+        els[k].classList.add("hit");
+        setTimeout(done,560);
+      };
+    }
+  }
+
+  function autoAb(name){
+    var w=name.toUpperCase().replace(/[^A-Z0-9 ]/g," ").trim().split(/ +/).filter(Boolean);
+    if(!w.length)return "?";
+    return (w.length>1?w.map(function(x){return x[0]}).join(""):w[0]).slice(0,3);
+  }
+  function addItem(name,ab,qty){
+    var idx=-1;
+    PRIZES.forEach(function(p,i){if(p[0].toLowerCase()===name.toLowerCase())idx=i});
+    if(idx<0){PRIZES.push([name,0,"🎁",ab||autoAb(name)]);idx=PRIZES.length-1}
+    PRIZES[idx][1]+=qty;
+    var empty=[];slots.forEach(function(p,k){if(p<0)empty.push(k)});
+    for(var q=0;q<qty;q++){
+      if(empty.length)slots[empty.splice(Math.floor(Math.random()*empty.length),1)[0]]=idx;
+      else slots.push(idx);
+    }
+    save();render();
+    return PRIZES[idx][0];
+  }
+
+  knob.addEventListener("click",press);
+  $("rvOk").addEventListener("click",function(){hidePrize();knob.focus()});
+  $("reveal").addEventListener("click",function(e){if(e.target===this)hidePrize()});
+  $("refill").addEventListener("click",function(){$("confirm").hidden=false;this.hidden=true});
+  $("no").addEventListener("click",function(){$("confirm").hidden=true;$("refill").hidden=false});
+  $("yes").addEventListener("click",function(){
+    if(busy)return;
+    fresh();save();hidePrize();gun.style.transform="";render();
+    $("confirm").hidden=true;$("refill").hidden=false;
+  });
+
+  var form=$("addForm"),msg=$("addMsg");
+  $("addBtn").addEventListener("click",function(){form.hidden=!form.hidden;if(!form.hidden)$("addName").focus()});
+  $("addCancel").addEventListener("click",function(){form.hidden=true});
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    if(busy)return;
+    var name=$("addName").value.trim(),ab=$("addAb").value.trim().toUpperCase(),qty=Math.floor(+$("addQty").value)||0;
+    var room=CAP-total();
+    msg.hidden=false;
+    if(!name){msg.textContent="Type an item name first.";return}
+    if(qty<1){msg.textContent="Add at least 1 target.";return}
+    if(qty>room){msg.textContent=room>0?"The board holds "+CAP+" targets, so there is room for "+room+" more right now.":"The board is full at "+CAP+" targets. Shoot a few first.";return}
+    var n=addItem(name,ab,qty);
+    msg.textContent="Added "+qty+" × "+n+".";
+    $("addName").value="";$("addAb").value="";$("addQty").value=1;$("addName").focus();
+  });
+
+  load();render();
+})();
+</script>
+</body>
+</html>
